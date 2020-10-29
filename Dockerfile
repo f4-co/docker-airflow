@@ -1,18 +1,21 @@
-# VERSION 1.10.9
+# VERSION 1.10.12
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
 FROM python:3.7-slim-buster
-LABEL maintainer="Puckel_"
+LABEL maintainer="F4 Team <team@f4.co>"
 
 # Never prompt the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
+# Container to host group mapping
+ARG DOCKER_GROUP_ID=998
+
 # Airflow
-ARG AIRFLOW_VERSION=1.10.9
+ARG AIRFLOW_VERSION=1.10.12
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
@@ -79,6 +82,10 @@ COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
 EXPOSE 8080 5555 8793
+
+USER root
+RUN groupadd --gid ${DOCKER_GROUP_ID} docker \
+    && usermod -aG docker airflow
 
 USER airflow
 WORKDIR ${AIRFLOW_USER_HOME}
